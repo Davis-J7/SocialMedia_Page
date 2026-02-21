@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block header %}System Overview{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Total Users</div>
+        <div class="value">{{ stats.total_users }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Total Posts</div>
+        <div class="value">{{ stats.total_posts }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Total Messages</div>
+        <div class="value">{{ stats.total_messages }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Total Stories</div>
+        <div class="value">{{ stats.total_stories }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3>Registered Users</h3>
+        <a href="{{ url_for('create_user') }}" class="btn btn-primary"><i class="fas fa-plus"></i> New User</a>
+    </div>
+    
+    <form action="{{ url_for('search') }}" method="GET" style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+        <input type="text" name="q" placeholder="Search by name or email..." class="form-control" value="{{ query or '' }}">
+        <button type="submit" class="btn btn-secondary"><i class="fas fa-search"></i> Search</button>
+    </form>
+
+    <div class="grid">
+        {% for user in users %}
+            <div class="card" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h4 style="font-size: 1.125rem;">{{ user.name.first }} {{ user.name.last }}</h4>
+                        <p style="color: var(--text-muted); font-size: 0.8125rem;">{{ user.email }}</p>
+                    </div>
+                    <span class="status-badge" style="background-color: #e0f2fe; color: #0369a1;">{{ user.category }}</span>
+                </div>
+                
+                <div class="action-row">
+                    <a href="{{ url_for('user_profile', user_hex_id=user._id|string) }}" class="btn btn-secondary" style="flex: 1;"><i class="fas fa-eye"></i> View</a>
+                    <a href="{{ url_for('edit_user', user_id=user._id|string) }}" class="btn btn-secondary" style="padding: 0.5rem;"><i class="fas fa-edit"></i></a>
+                    <form action="{{ url_for('delete_user', user_id=user._id|string) }}" method="POST" onsubmit="return confirm('Delete this user and all their data permanently?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 0.5rem;"><i class="fas fa-trash-alt"></i></button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">
+                No users found matching your criteria.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

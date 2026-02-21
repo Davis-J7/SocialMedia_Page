@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Admin Panel</h2>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}" class="{% if request.path == '/' %}active{% endif %}">
+                <i class="fas fa-home"></i> &nbsp; Dashboard
+            </a></li>
+            <li><a href="{{ url_for('create_user') }}" class="{% if request.path == '/create_user' %}active{% endif %}">
+                <i class="fas fa-user-plus"></i> &nbsp; Create User
+            </a></li>
+            <li><a href="{{ url_for('all_posts') }}" class="{% if request.path == '/posts' %}active{% endif %}">
+                <i class="fas fa-file-alt"></i> &nbsp; All Posts
+            </a></li>
+            <li><a href="{{ url_for('all_messages') }}" class="{% if request.path == '/messages' %}active{% endif %}">
+                <i class="fas fa-envelope"></i> &nbsp; All Messages
+            </a></li>
+            <li><a href="{{ url_for('all_stories') }}" class="{% if request.path == '/stories' %}active{% endif %}">
+                <i class="fas fa-history"></i> &nbsp; All Stories
+            </a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash-message">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        <header>
+            <h1>{% block header %}{% endblock %}</h1>
+        </header>
+        <section>
+            {% block content %}{% endblock %}
+        </section>
+    </div>
+</body>
+</html>

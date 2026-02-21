@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.name.first }}'s Profile{% endblock %}
+{% block header %}{{ user.name.first }} {{ user.name.last }}{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+    <!-- Sidebar for User Details -->
+    <div>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                <h3>User Information</h3>
+                <a href="{{ url_for('edit_user', user_id=user._id|string) }}" class="btn btn-secondary" style="padding: 0.5rem;"><i class="fas fa-edit"></i></a>
+            </div>
+            <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.875rem;"><strong>Email:</strong> {{ user.email }}</p>
+            <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;"><strong>Category:</strong> {{ user.category }}</p>
+            <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;"><strong>Gender:</strong> {{ user.gender }}</p>
+            <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;"><strong>DOB:</strong> {{ user.dob }}</p>
+            <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;"><strong>Member since:</strong> {{ user.date_of_creation.strftime('%Y-%m-%d') }}</p>
+            <p style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted);"><strong>Internal ID:</strong> {{ user._id }}</p>
+            
+            <div style="margin-top: 2rem;">
+                <form action="{{ url_for('delete_user', user_id=user._id|string) }}" method="POST" onsubmit="return confirm('Delete this user and all their data permanently?');">
+                    <button type="submit" class="btn btn-danger" style="width: 100%;"><i class="fas fa-trash-alt"></i> Delete User Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Section for User Activities -->
+    <div>
+        <!-- User Stories -->
+        <div class="card">
+            <h3>User Stories</h3>
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem;">
+                {% for story in stories %}
+                    <div style="min-width: 150px; background-color: #f9fafb; padding: 1rem; border-radius: 0.75rem; border: 1px dashed var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span class="status-badge" style="background-color: #f3f4f6;">{{ story.media.type }}</span>
+                            <form action="{{ url_for('delete_story', story_id=story._id|string) }}" method="POST">
+                                <button type="submit" style="background:none; border:none; color: var(--danger-color); cursor: pointer;"><i class="fas fa-times"></i></button>
+                            </form>
+                        </div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted);">Length: {{ story.media.length }}s</p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Expires: {{ story.expires_at.strftime('%m-%d %H:%M') }}</p>
+                    </div>
+                {% else %}
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">No active stories.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- User Posts -->
+        <div class="card">
+            <h3>User Posts</h3>
+            <div style="margin-top: 1.5rem;">
+                {% for post in posts %}
+                    <div class="card" style="margin-bottom: 1rem; background-color: #f9fafb; position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <p><strong>{{ post.content.text }}</strong></p>
+                            <form action="{{ url_for('delete_post', post_id=post._id|string) }}" method="POST" onsubmit="return confirm('Delete this post?');">
+                                <button type="submit" class="btn btn-danger" style="padding: 0.4rem; font-size: 0.75rem;"><i class="fas fa-trash-alt"></i></button>
+                            </form>
+                        </div>
+                        <div style="margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                            <span>Posted on: {{ post.date_of_posting.strftime('%b %d, %Y') }}</span>
+                            <span>Visibility: {{ post.permissions.accessibility }}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">No posts yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- User Messages -->
+        <div class="card">
+            <h3>User Message Logs</h3>
+            <div style="margin-top: 1.5rem;">
+                {% for msg in messages %}
+                    <div class="message-item" style="padding-bottom: 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <div>
+                                {% if msg.sender_id == user._id %}
+                                    <span class="status-badge" style="background-color: #e0f2fe; color: #0369a1;">Sent</span>
+                                {% else %}
+                                    <span class="status-badge" style="background-color: #f3f4f6; color: #4b5563;">Received</span>
+                                {% endif %}
+                                <small style="margin-left: 0.5rem; color: var(--text-muted);">{{ msg.time.strftime('%Y-%m-%d %H:%M:%S') }}</small>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <span class="status-badge {% if msg.status == 'Unread' %}status-unread{% else %}status-delivered{% endif %}">{{ msg.status }}</span>
+                                <form action="{{ url_for('delete_message', msg_id=msg._id|string) }}" method="POST" onsubmit="return confirm('Delete this message log?');">
+                                    <button type="submit" style="background:none; border:none; color: var(--danger-color); cursor: pointer;"><i class="fas fa-trash-alt"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.9375rem; padding: 0.75rem; background-color: #f3f4f6; border-radius: 0.5rem;">{{ msg.content }}</p>
+                    </div>
+                {% else %}
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">No message logs found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

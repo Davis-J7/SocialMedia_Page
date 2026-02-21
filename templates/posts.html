@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}All Posts{% endblock %}
+{% block header %}Global Post Feed{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="grid">
+        {% for post in posts %}
+            <div class="card" style="border-left: 4px solid var(--primary-color);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <p style="font-size: 0.875rem;"><strong>{{ post.user_name }}</strong></p>
+                        <small style="color: var(--text-muted);">{{ post.date_of_posting.strftime('%b %d, %Y %H:%M') }}</small>
+                    </div>
+                    <form action="{{ url_for('delete_post', post_id=post._id|string) }}" method="POST" onsubmit="return confirm('Delete this post?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 0.4rem; font-size: 0.75rem;"><i class="fas fa-trash-alt"></i></button>
+                    </form>
+                </div>
+                <div style="margin-top: 1rem; font-size: 1.125rem;">
+                    {{ post.content.text }}
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                    <span class="status-badge" style="background-color: #f3f4f6;">{{ post.content.media_type }}</span>
+                    <span class="status-badge" style="background-color: #f3f4f6;">{{ post.permissions.accessibility }}</span>
+                </div>
+            </div>
+        {% else %}
+            <p>No posts found in the system.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
