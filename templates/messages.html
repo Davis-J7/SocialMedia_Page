@@ -4,6 +4,19 @@
 {% block header %}Global Message Logs{% endblock %}
 
 {% block content %}
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+    <div class="stat-card">
+        <div class="label">Total Messages</div>
+        <div class="value">{{ total_count }}</div>
+    </div>
+    {% for stat in status_stats %}
+    <div class="stat-card">
+        <div class="label">{{ stat._id }}</div>
+        <div class="value">{{ stat.count }}</div>
+    </div>
+    {% endfor %}
+</div>
+
 <div class="card">
     <div style="margin-top: 1rem;">
         {% for msg in messages %}

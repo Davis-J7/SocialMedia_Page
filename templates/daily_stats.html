@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Statistics{% endblock %}
+{% block header %}Daily Statistics for {{ date }}{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    <form action="{{ url_for('daily_stats') }}" method="GET" style="display: flex; gap: 1rem; align-items: flex-end;">
+        <div style="flex: 1;">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 0.4rem;">Select Date</label>
+            <input type="date" name="date" class="form-control" value="{{ date }}" style="margin-bottom: 0;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: calc(2rem + 12px);"><i class="fas fa-calendar-check"></i> View Stats</button>
+    </form>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="label">Posts Created</div>
+        <div class="value">{{ post_count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Messages Sent</div>
+        <div class="value">{{ message_count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="label">Stories Created</div>
+        <div class="value">{{ story_count }}</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+    <!-- Top Posters Section (Group By + Sort) -->
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;"><i class="fas fa-trophy"></i> Top Posters Today</h3>
+        {% if top_posters %}
+            <ul style="list-style: none; padding: 0;">
+                {% for poster in top_posters %}
+                    <li style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                        <div>
+                            <div style="font-weight: 600;">{{ poster.user.name.first }} {{ poster.user.name.last }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">{{ poster.user.email }}</div>
+                        </div>
+                        <div style="background-color: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.875rem;">
+                            {{ poster.count }} posts
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: var(--text-muted);">No posts found for this day.</p>
+        {% endif %}
+    </div>
+
+    <!-- Posts Grouped by Type Section (Group By) -->
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;"><i class="fas fa-layer-group"></i> Posts by Type</h3>
+        {% if posts_by_type %}
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
+                {% for group in posts_by_type %}
+                    <div style="flex: 1; min-width: 100px; background-color: #f9fafb; padding: 1rem; border-radius: 0.75rem; text-align: center; border: 1px solid var(--border-color);">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">{{ group._id }}</div>
+                        <div style="font-size: 1.75rem; font-weight: 700; color: var(--primary-color);">{{ group.count }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: var(--text-muted);">No activity recorded for this day.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Total List of Posts (Order By) -->
+<div class="card" style="margin-top: 1.5rem;">
+    <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-list"></i> Detailed List of Posts</h3>
+    {% if posts_list %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; border-bottom: 2px solid var(--border-color);">
+                    <th style="padding: 1rem 0.5rem;">Time</th>
+                    <th style="padding: 1rem 0.5rem;">Author</th>
+                    <th style="padding: 1rem 0.5rem;">Type</th>
+                    <th style="padding: 1rem 0.5rem;">Content Preview</th>
+                    <th style="padding: 1rem 0.5rem; text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts_list %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 1rem 0.5rem; font-size: 0.875rem;">{{ post.date_of_posting.strftime('%H:%M:%S') }}</td>
+                        <td style="padding: 1rem 0.5rem;">
+                            <div style="font-weight: 500;">{{ post.user_name if post.user_name else (post.author.name.first ~ ' ' ~ post.author.name.last) if post.author else 'Unknown' }}</div>
+                        </td>
+                        <td style="padding: 1rem 0.5rem;">
+                            <span class="status-badge" style="background-color: #f3f4f6; color: #374151;">{{ post.content.media_type }}</span>
+                        </td>
+                        <td style="padding: 1rem 0.5rem; font-size: 0.875rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ post.content.text }}
+                        </td>
+                        <td style="padding: 1rem 0.5rem; text-align: right;">
+                            <a href="{{ url_for('user_profile', user_hex_id=post.user_id|string) }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Profile</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+            No posts found for this date.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

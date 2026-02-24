@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}User Dashboard{% endblock %}
+{% block header %}Welcome, {{ session['user_name'] }}{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Left Column: Feed & Creation -->
+    <div>
+        <!-- Create Post -->
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">Create a Post</h3>
+            <form action="{{ url_for('user_create_post') }}" method="POST">
+                <div class="form-group">
+                    <textarea name="content" class="form-control" rows="3" placeholder="What's on your mind?" required></textarea>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.75rem; font-weight: 600;">Media Type</label>
+                        <select name="media_type" class="form-control">
+                            <option value="Text">Text</option>
+                            <option value="Image">Image</option>
+                            <option value="Video">Video</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 0.75rem; font-weight: 600;">Privacy</label>
+                        <select name="privacy" class="form-control">
+                            <option value="Everyone">Everyone</option>
+                            <option value="Friends">Friends</option>
+                            <option value="Only Me">Only Me</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Post</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- My Posts -->
+        <h3>My Posts</h3>
+        {% for post in posts %}
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div>
+                        <span class="status-badge" style="background: #e0f2fe; color: #0369a1;">{{ post.content.media_type }}</span>
+                        <small style="color: var(--text-muted); margin-left: 0.5rem;">{{ post.date_of_posting.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <form action="{{ url_for('update_post_privacy', post_id=post._id|string) }}" method="POST" style="display: flex; gap: 0.5rem; align-items: center;">
+                            <select name="privacy" class="form-control" style="padding: 0.25rem; font-size: 0.75rem; width: auto;" onchange="this.form.submit()">
+                                <option value="Everyone" {% if post.permissions.accessibility == 'Everyone' %}selected{% endif %}>Everyone</option>
+                                <option value="Friends" {% if post.permissions.accessibility == 'Friends' %}selected{% endif %}>Friends</option>
+                                <option value="Only Me" {% if post.permissions.accessibility == 'Only Me' %}selected{% endif %}>Only Me</option>
+                            </select>
+                        </form>
+                        <form action="{{ url_for('user_delete_post', post_id=post._id|string) }}" method="POST" onsubmit="return confirm('Delete this post?');">
+                            <button type="submit" class="btn btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </div>
+                <p>{{ post.content.text }}</p>
+            </div>
+        {% else %}
+            <p style="color: var(--text-muted); padding: 2rem; text-align: center;">No posts yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Right Column: Stories & Messages -->
+    <div>
+        <!-- Create Story -->
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">Post a Story</h3>
+            <form action="{{ url_for('user_create_story') }}" method="POST">
+                <div class="form-group">
+                    <label style="font-size: 0.75rem; font-weight: 600;">Story Type</label>
+                    <select name="media_type" class="form-control">
+                        <option value="Image">Image</option>
+                        <option value="Video">Video</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="width: 100%;">Upload Story</button>
+            </form>
+            
+            <div style="margin-top: 1.5rem;">
+                <h4>Active Stories</h4>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;">
+                    {% for story in stories %}
+                        <div style="position: relative;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary-color); padding: 2px;">
+                                <div style="width: 100%; height: 100%; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; text-align: center;">
+                                    {{ story.media.type }}
+                                </div>
+                            </div>
+                            <form action="{{ url_for('user_delete_story', story_id=story._id|string) }}" method="POST" style="position: absolute; top: -5px; right: -5px;" onsubmit="return confirm('Delete story?');">
+                                <button type="submit" style="background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">Messages</h3>
+            <form action="{{ url_for('user_send_message') }}" method="POST" style="margin-bottom: 1.5rem;">
+                <div class="form-group">
+                    <input type="email" name="receiver_email" class="form-control" placeholder="Recipient Email" required>
+                </div>
+                <div class="form-group">
+                    <textarea name="content" class="form-control" placeholder="Type a message..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+            </form>
+
+            <h4>Inbox</h4>
+            {% for msg in messages %}
+                <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>{{ msg.sender.name.first }} {{ msg.sender.name.last }}</strong>
+                            <small style="color: var(--text-muted);">{{ msg.time.strftime('%H:%M') }}</small>
+                        </div>
+                        <p style="font-size: 0.875rem; margin-top: 0.25rem;">{{ msg.content }}</p>
+                    </div>
+                    <form action="{{ url_for('user_delete_message', msg_id=msg._id|string) }}" method="POST" style="margin-left: 1rem;" onsubmit="return confirm('Delete message?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 0.2rem 0.4rem; font-size: 0.7rem;"><i class="fas fa-trash"></i></button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -31,7 +31,7 @@ def seed_database():
 
         users_to_create = []
         
-        # 4. Generate 25 Users (Original 2 + 23 new ones)
+        # 4. Generate 25 Users
         for i in range(25):
             fname = first_names[i % len(first_names)]
             lname = last_names[i % len(last_names)]
@@ -41,6 +41,7 @@ def seed_database():
                 "user_id": f"U{random.randint(1000000, 9999999)}",
                 "name": {"first": fname, "last": lname},
                 "email": email,
+                "password": "password123", # Default password for all seeded users
                 "dob": (datetime(1980, 1, 1) + timedelta(days=random.randint(0, 10000))).strftime('%Y-%m-%d'),
                 "gender": random.choice(genders),
                 "category": random.choice(categories),
@@ -109,6 +110,7 @@ def seed_database():
         stories_to_create = []
         for user_id in user_ids:
             # Each user gets 1 story
+            created_at = datetime.utcnow() - timedelta(hours=random.randint(0, 48))
             story = {
                 "story_id": f"S{random.randint(100, 999)}",
                 "user_id": user_id,
@@ -117,7 +119,8 @@ def seed_database():
                     "audio_type": "Stereo",
                     "length": random.randint(5, 30)
                 },
-                "expires_at": datetime.utcnow() + timedelta(hours=random.randint(1, 24))
+                "created_at": created_at,
+                "expires_at": created_at + timedelta(hours=24)
             }
             stories_to_create.append(story)
 

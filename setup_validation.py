@@ -20,7 +20,7 @@ def setup_user_validation():
     user_schema = {
         "$jsonSchema": {
             "bsonType": "object",
-            "required": ["user_id", "name", "email", "dob", "gender", "category", "date_of_creation"],
+            "required": ["user_id", "name", "email", "password", "dob", "gender", "category", "date_of_creation"],
             "properties": {
                 "user_id": {
                     "bsonType": "string",
@@ -38,6 +38,10 @@ def setup_user_validation():
                     "bsonType": "string",
                     "pattern": "^.+@.+$",
                     "description": "must be a string and match the regular expression pattern"
+                },
+                "password": {
+                    "bsonType": "string",
+                    "description": "must be a string and is required"
                 },
                 "dob": {
                     "bsonType": "string",

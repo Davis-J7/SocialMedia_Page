@@ -9,23 +9,43 @@
 </head>
 <body>
     <div class="sidebar">
-        <h2>Admin Panel</h2>
+        <h2>Social Dashboard</h2>
         <ul class="nav-links">
-            <li><a href="{{ url_for('index') }}" class="{% if request.path == '/' %}active{% endif %}">
-                <i class="fas fa-home"></i> &nbsp; Dashboard
-            </a></li>
-            <li><a href="{{ url_for('create_user') }}" class="{% if request.path == '/create_user' %}active{% endif %}">
-                <i class="fas fa-user-plus"></i> &nbsp; Create User
-            </a></li>
-            <li><a href="{{ url_for('all_posts') }}" class="{% if request.path == '/posts' %}active{% endif %}">
-                <i class="fas fa-file-alt"></i> &nbsp; All Posts
-            </a></li>
-            <li><a href="{{ url_for('all_messages') }}" class="{% if request.path == '/messages' %}active{% endif %}">
-                <i class="fas fa-envelope"></i> &nbsp; All Messages
-            </a></li>
-            <li><a href="{{ url_for('all_stories') }}" class="{% if request.path == '/stories' %}active{% endif %}">
-                <i class="fas fa-history"></i> &nbsp; All Stories
-            </a></li>
+            {% if session.get('user_id') %}
+                {% if session.get('role') == 'admin' %}
+                    <li><a href="{{ url_for('index') }}" class="{% if request.path == '/' %}active{% endif %}">
+                        <i class="fas fa-home"></i> &nbsp; Admin Dashboard
+                    </a></li>
+                    <li><a href="{{ url_for('all_posts') }}" class="{% if request.path == '/posts' %}active{% endif %}">
+                        <i class="fas fa-file-alt"></i> &nbsp; All Posts
+                    </a></li>
+                    <li><a href="{{ url_for('all_messages') }}" class="{% if request.path == '/messages' %}active{% endif %}">
+                        <i class="fas fa-envelope"></i> &nbsp; All Messages
+                    </a></li>
+                    <li><a href="{{ url_for('all_stories') }}" class="{% if request.path == '/stories' %}active{% endif %}">
+                        <i class="fas fa-history"></i> &nbsp; All Stories
+                    </a></li>
+                    <li><a href="{{ url_for('daily_stats') }}" class="{% if request.path == '/daily_stats' %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i> &nbsp; Daily Stats
+                    </a></li>
+                {% else %}
+                    <li><a href="{{ url_for('user_dashboard') }}" class="{% if request.path == '/user/dashboard' %}active{% endif %}">
+                        <i class="fas fa-user-circle"></i> &nbsp; My Dashboard
+                    </a></li>
+                {% endif %}
+                <li style="margin-top: 2rem;">
+                    <a href="{{ url_for('logout') }}" style="color: var(--danger-color);">
+                        <i class="fas fa-sign-out-alt"></i> &nbsp; Logout
+                    </a>
+                </li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}" class="{% if request.path == '/login' %}active{% endif %}">
+                    <i class="fas fa-sign-in-alt"></i> &nbsp; Login
+                </a></li>
+                <li><a href="{{ url_for('register') }}" class="{% if request.path == '/register' %}active{% endif %}">
+                    <i class="fas fa-user-plus"></i> &nbsp; Register
+                </a></li>
+            {% endif %}
         </ul>
     </div>
     <div class="main-content">
