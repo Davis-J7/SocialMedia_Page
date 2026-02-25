@@ -5,6 +5,7 @@ from flask import Flask, redirect, render_template, request, abort, url_for, fla
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
+from triggers import validate_content_trigger
 
 # 1. Load variables and initialize Flask
 load_dotenv()
@@ -176,6 +177,12 @@ def user_create_post():
     media_type = request.form.get('media_type', 'Text')
     privacy = request.form.get('privacy', 'Everyone')
     
+    # TRIGGER: Content Moderation
+    is_valid, error_msg = validate_content_trigger(content)
+    if not is_valid:
+        flash(error_msg, 'danger')
+        return redirect(url_for('user_dashboard'))
+    
     post_doc = {
         "post_id": "P" + os.urandom(2).hex().upper(),
         "user_id": ObjectId(session['user_id']),
@@ -222,6 +229,12 @@ def user_send_message():
     receiver_email = request.form.get('receiver_email')
     content = request.form.get('content')
     
+    # TRIGGER: Content Moderation
+    is_valid, error_msg = validate_content_trigger(content)
+    if not is_valid:
+        flash(error_msg, 'danger')
+        return redirect(url_for('user_dashboard'))
+        
     receiver = db.users.find_one({"email": receiver_email})
     if not receiver:
         flash('User not found.', 'danger')
